@@ -1,5 +1,5 @@
 ------------------------------------------------------------------------------------
--- NiceNameplates by Demorto#2660 Version: 8.0.1.3
+-- NiceNameplates by Demorto#2660 Version: 8.0.1.4
 ------------------------------------------------------------------------------------
 
 local INFO_POINT            = 'TOP'
@@ -112,12 +112,12 @@ function NiceNameplates:MakeInfoString(unit, item)
         return realm
     elseif item == 'level' then
         local level = UnitLevel(unit)
-        if level == -1 then
-            level = '??'
-        end
+        if level == -1 then level = '??' end
         return level
     elseif item == 'levelcolor' then
-        local levelcolor = GetCreatureDifficultyColor(UnitLevel(unit))
+        local level = UnitLevel(unit)
+        if level == -1 then level = 255 end
+        local levelcolor = GetCreatureDifficultyColor(level)
         return levelcolor
     elseif item == 'fullname' then
         local _, realm = UnitName(unit)
@@ -129,13 +129,36 @@ function NiceNameplates:MakeInfoString(unit, item)
         local guild, _, _ = GetGuildInfo(unit)
         return guild
     elseif item == 'profession' then
-        local TooltipTextLeft2 = NiceNameplatesTooltipTextLeft2:GetText()
-        local isWrong = TooltipTextLeft2:lower():match(LEVEL_GAINED:gsub('%%d', '[%%d?]+'):lower()) or TooltipTextLeft2:lower():match(LEVEL:lower()..' ([%d?]+)%s?%(?([^)]*)%)?')
-        if not isWrong then
-            return TooltipTextLeft2
-        else
-            return false
+        if NiceNameplatesTooltip:NumLines() > 2 then
+            for i = 2, NiceNameplatesTooltip:NumLines() do
+                local TooltipTextLeft = _G['NiceNameplatesTooltipTextLeft' .. i]:GetText()
+                if not ( TooltipTextLeft:lower():match(LEVEL_GAINED:gsub('%%d', '[%%d?]+'):lower()) or TooltipTextLeft:lower():match(LEVEL:lower()..' ([%d?]+)%s?%(?([^)]*)%)?')) then
+                    return TooltipTextLeft
+                else
+                    TooltipTextLeft = _G['NiceNameplatesTooltipTextLeft' .. i + 1]:GetText()
+                    return not TooltipTextLeft:match(PVP) and TooltipTextLeft
+                end
+            end
         end
+
+
+        --[[
+        local TooltipTextLeft = NiceNameplatesTooltipTextLeft2:GetText()
+        local isWrong = TooltipTextLeft:lower():match(LEVEL_GAINED:gsub('%%d', '[%%d?]+'):lower()) or TooltipTextLeft:lower():match(LEVEL:lower()..' ([%d?]+)%s?%(?([^)]*)%)?')
+        if not isWrong then
+            return TooltipTextLeft
+        else
+            for i = 2, NiceNameplatesTooltip:NumLines() do
+                TooltipTextLeft = _G['NiceNameplatesTooltipTextLeft' .. i]:GetText()
+                if TooltipTextLeft:lower():match(LEVEL:lower()) then
+                    TooltipTextLeft = _G['NiceNameplatesTooltipTextLeft' .. i+1]
+                    break
+                end
+            end
+            return TooltipTextLeft
+            --return false
+        end
+        ]]--
     elseif item == 'localizedclass' then
         local localizedclass, _ = UnitClass(unit)
         return localizedclass
@@ -234,15 +257,22 @@ function NiceNameplates:MakeInfoString(unit, item)
             if ProgressColored then
                 for i = 1, GetNumQuestLogEntries() do
                     local title, level, suggestedGroup, isHeader, isCollapsed, isComplete, frequency, questID, startEvent, displayQuestID, isOnMap, hasLocalPOI, isTask, isBounty, isStory = GetQuestLogTitle(i)
+                    if not isHeader and title == QuestName then
+                        local colors = GetQuestDifficultyColor(level)
+                        return '|cFF'..RGBToHex(colors.r, colors.g, colors.b)..ProgressColored..'|r'
+                    end
+                --[[
                     if not isHeader then
                         for objectiveID = 1, GetNumQuestLeaderBoards(i) or 0 do
                             local objectiveText, objectiveType, finished, numFulfilled, numRequired = GetQuestObjectiveInfo(questID, objectiveID, false)
                             if objectiveText == ProgressColored then
+
                                 local colors = GetQuestDifficultyColor(level)
                                 return '|cFF'..RGBToHex(colors.r, colors.g, colors.b)..ProgressColored..'|r'
                             end
                         end
                     end
+                    ]]--
                 end
             else
                 return false
@@ -332,8 +362,7 @@ function NiceNameplates:NiceNameplateInfo_Update(unit)
                 NiceNameplateInfo:SetText(InfoString)
             elseif ( isNPC and not self:MakeInfoString(unit, 'questinfo') ) then
                 NiceNameplateInfo:SetText(self:MakeInfoString(unit, 'profession'))
-            elseif ( self:MakeInfoString(unit, 'questcolorinfo') ) then
-
+            elseif ( self:MakeInfoString(unit, 'questinfo') ) then
                 NiceNameplateInfo:SetText(self:MakeInfoString(unit, 'questcolorinfo'))
             else
                 NiceNameplateInfo:SetText(nil)
