@@ -1,5 +1,5 @@
 ------------------------------------------------------------------------------------
--- NiceNameplates by Demorto#2660 Version: 8.0.1.2
+-- NiceNameplates by Demorto#2660 Version: 8.0.1.3
 ------------------------------------------------------------------------------------
 
 local INFO_POINT            = 'TOP'
@@ -328,7 +328,7 @@ function NiceNameplates:NiceNameplateInfo_Update(unit)
             elseif ( isEnemy and not self:MakeInfoString(unit, 'questinfo') ) then
                 local levelColor = self:MakeInfoString(unit, 'levelcolor') or {r = 1, g = 1, b = 1 }
 
-                local InfoString = format('%s, '..LEVEL_GAINED:gsub('%%d', '|cFF%%s%%d|r'), self:MakeInfoString(unit, 'creaturetype') or ENEMY, RGBToHex(levelColor.r, levelColor.g, levelColor.b), self:MakeInfoString(unit, 'level'))
+                local InfoString = format('%s, '..LEVEL_GAINED:gsub('%%d', '|cFF%%s%%s|r'), self:MakeInfoString(unit, 'creaturetype') or ENEMY, RGBToHex(levelColor.r, levelColor.g, levelColor.b), self:MakeInfoString(unit, 'level'))
                 NiceNameplateInfo:SetText(InfoString)
             elseif ( isNPC and not self:MakeInfoString(unit, 'questinfo') ) then
                 NiceNameplateInfo:SetText(self:MakeInfoString(unit, 'profession'))
