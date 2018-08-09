@@ -1,0 +1,11 @@
+## Interface: 80000
+
+## Title: |cFFFF0800Nice|r|cFFFFFFFFNameplates|r
+
+## Notes: NiceNameplates tweaks for Default UI
+
+## Version: 8.0.1.2
+## Author: Demorto#2660
+
+embeds.xml
+NiceNameplates.lua
